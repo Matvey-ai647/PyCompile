@@ -1,4 +1,4 @@
-"""Python IDE Compile - ваш компилятор для удобной работы с Python"""
+"""PyCompile - компилятор для удобной работы с Python."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Iterable
 
 
-APP_NAME = "Python IDE Compile"
+APP_NAME = "PyCompile"
 JDK_URL = "https://adoptium.net/temurin/releases/"
 
 
@@ -222,7 +222,7 @@ def lexical_analysis(source: str) -> list[Diagnostic]:
 def semantic_analysis(tree: ast.Module, source: str) -> list[Diagnostic]:
     diagnostics: list[Diagnostic] = []
     try:
-        compile(tree, "<python-ide-compile>", "exec")
+        compile(tree, "<pycompile>", "exec")
     except SyntaxError as error:
         diagnostics.append(
             Diagnostic(
@@ -272,7 +272,7 @@ def semantic_analysis(tree: ast.Module, source: str) -> list[Diagnostic]:
         for child in table.get_children():
             inspect_scope(child)
 
-    inspect_scope(symtable.symtable(source, "<python-ide-compile>", "exec"))
+    inspect_scope(symtable.symtable(source, "<pycompile>", "exec"))
 
     for node in analyzer.loads:
         if node.id in analyzer.bound_names or node.id in reported:
@@ -691,11 +691,11 @@ def connect() -> int:
     scripts.mkdir(parents=True, exist_ok=True)
     script = Path(__file__).resolve()
     if os.name == "nt":
-        launcher = scripts / "python-ide-compile.cmd"
+        launcher = scripts / "pycompile.cmd"
         command = subprocess.list2cmdline([sys.executable, str(script)]) + " %*"
         launcher.write_text(f"@echo off\r\n{command}\r\n", encoding="utf-8")
     else:
-        launcher = scripts / "python-ide-compile"
+        launcher = scripts / "pycompile"
         launcher.write_text(
             "#!/bin/sh\nexec "
             + shlex.join([sys.executable, str(script)])
@@ -704,7 +704,7 @@ def connect() -> int:
         )
         launcher.chmod(0o755)
     print(f"{APP_NAME} подключён: {launcher}")
-    print("Запуск: python-ide-compile check путь\\к\\файлу.py")
+    print("Запуск: pycompile check путь\\к\\файлу.py")
     if str(scripts) not in os.environ.get("PATH", "").split(os.pathsep):
         print(f"Если команда не найдена, добавьте эту папку в PATH: {scripts}")
     return 0
@@ -712,21 +712,21 @@ def connect() -> int:
 
 def disconnect() -> int:
     scripts = scripts_directory()
-    names = ["python-ide-compile.cmd", "python-ide-compile"]
+    names = ["pycompile.cmd", "pycompile", "python-ide-compile.cmd", "python-ide-compile"]
     removed = False
     for name in names:
         launcher = scripts / name
         if launcher.is_file():
             launcher.unlink()
             removed = True
-    print("Подключение Python IDE Compile отменено." if removed else "Команда ранее не подключалась.")
+    print("Подключение PyCompile отменено." if removed else "Команда ранее не подключалась.")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python-ide-compile",
-        description="Python IDE Compile — проверка Python-кода и перевод в JavaScript.",
+        prog="pycompile",
+        description="PyCompile — проверка Python-кода и перевод в JavaScript.",
         epilog=(
             "Примеры: python compile.py check main.py | "
             "python compile.py fix main.py --write | "
@@ -765,9 +765,9 @@ def print_welcome() -> None:
     print("  python compile.py translate main.py -o main.js")
     print("      Перевести поддерживаемый Python-код в JavaScript.")
     print("  python compile.py connect")
-    print("      Подключить короткую команду python-ide-compile.")
+    print("      Подключить короткую команду pycompile.")
     print("  python compile.py disconnect")
-    print("      Удалить подключённую короткую команду.")
+    print("      Удалить подключённую команду pycompile.")
     print("\nПодробная справка: python compile.py --help")
 
 
